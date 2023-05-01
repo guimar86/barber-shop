@@ -9,9 +9,9 @@ namespace BarberShop.Management.Controllers;
 public class CustomerController : ControllerBase
 {
 
-    private readonly CustomerService _customerService;
+    private readonly ICustomer _customerService;
 
-    public CustomerController(CustomerService customerService)
+    public CustomerController(ICustomer customerService)
     {
         _customerService = customerService;
     }

@@ -1,4 +1,5 @@
 using BarberShop.Management.DbContexts;
+using BarberShop.Management.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,7 +11,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json");
 var connectionString = builder.Configuration.GetConnectionString("barberShopCustomerDb");
+
+builder.Services.AddScoped<ICustomer, CustomerService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -30,5 +34,14 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<ApplicationDbContext>();    
+    context.Database.Migrate();
+}
 
 app.Run();
