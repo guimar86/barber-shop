@@ -24,6 +24,31 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
     depends_on:
       - appointmentDb
+  
+  payment-management:
+    build:
+      context: .
+      dockerfile: Barbershop.Payment/Dockerfile
+    ports:
+      - "8092:80"
+    environment:
+      ASPNETCORE_URLS: http://+:80
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+    depends_on:
+      - paymentDb
+        
+  notification-management:
+    build:
+      context: .
+      dockerfile: Barbershop.Notification/Dockerfile
+    ports:
+      - "8093:80"
+    environment:
+      ASPNETCORE_URLS: http://+:80
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+    depends_on:
+      - paymentDb
+  
 
   db:
     image: postgres
@@ -46,3 +71,14 @@ services:
       POSTGRES_DB: appointmentDB
     volumes:
       - .appointmentdb-data:/var/lib/postgresql/data
+
+  paymentDtb:
+    image: postgres
+    restart: always
+    hostname: paymentDb
+    environment:
+      POSTGRES_USER: groot
+      POSTGRES_PASSWORD: whatIs@Passw0rd
+      POSTGRES_DB: paymentsDb
+    volumes:
+      - .paymentsDb-data:/var/lib/postgresql/data

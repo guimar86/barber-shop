@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Barbershop.Notification", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Barbershop.Scheduling", "Barbershop.Scheduling\Barbershop.Scheduling.csproj", "{83087807-0C6F-47E4-81F6-17DA342C7894}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Barbershop.Payment", "Barbershop.Payment\Barbershop.Payment.csproj", "{7D9229BD-31DB-4C19-A508-2A64FB182475}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{83087807-0C6F-47E4-81F6-17DA342C7894}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83087807-0C6F-47E4-81F6-17DA342C7894}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83087807-0C6F-47E4-81F6-17DA342C7894}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D9229BD-31DB-4C19-A508-2A64FB182475}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D9229BD-31DB-4C19-A508-2A64FB182475}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D9229BD-31DB-4C19-A508-2A64FB182475}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D9229BD-31DB-4C19-A508-2A64FB182475}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
