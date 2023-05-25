@@ -2,6 +2,7 @@ using System.Net;
 using Barbershop.Scheduling.Models;
 using Barbershop.Scheduling.Services;
 using Microsoft.AspNetCore.Mvc;
+using ILogger = Serilog.ILogger;
 
 namespace Barbershop.Scheduling.Controllers;
 
@@ -10,10 +11,12 @@ namespace Barbershop.Scheduling.Controllers;
 public class SchedulingController : ControllerBase
 {
     private readonly IAppointmentService _appointmentService;
+    private readonly ILogger<SchedulingController> _logger;
 
-    public SchedulingController(IAppointmentService appointmentService)
+    public SchedulingController(IAppointmentService appointmentService, ILogger<SchedulingController> logger)
     {
         _appointmentService = appointmentService;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -21,11 +24,13 @@ public class SchedulingController : ControllerBase
     {
         try
         {
+            _logger.LogInformation("Create schedule {appointment}", appointment);
             var url = Url.Action(nameof(FindById), appointment.Id);
             return Created("", await _appointmentService.CreateAppointmentAsync(appointment));
         }
         catch (Exception e)
         {
+            _logger.LogError(e.Message);
             var problemDetails = new ProblemDetails
             {
                 Title = e.Message.GetType().Name,
@@ -36,7 +41,7 @@ public class SchedulingController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<IActionResult> update([FromBody] Appointment appointment)
+    public async Task<IActionResult> Update([FromBody] Appointment appointment)
     {
         try
         {
@@ -96,6 +101,7 @@ public class SchedulingController : ControllerBase
     {
         try
         {
+            _logger.LogInformation("List all schedule services");
             return Ok(await _appointmentService.GetAllAppointmentsAsync());
         }
         catch (Exception e)

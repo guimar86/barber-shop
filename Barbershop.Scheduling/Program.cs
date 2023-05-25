@@ -1,6 +1,7 @@
 using Barbershop.Scheduling.DbContexts;
 using Barbershop.Scheduling.Services;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,7 @@ builder.Services.AddDbContext<SchedulingDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("SchedulingDb"));
 });
+builder.Host.UseSerilog((context,configuration)=>configuration.ReadFrom.Configuration(builder.Configuration));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -26,7 +28,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseSerilogRequestLogging();
 app.UseAuthorization();
 
 app.MapControllers();
@@ -34,7 +36,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<SchedulingDbContext>();
-    context.Database.Migrate();
+    context.Database.Migrate(); 
 }
 
 app.Run();

@@ -1,6 +1,7 @@
 using Barbershop.Payment.DbContexts;
 using Barbershop.Payment.Services;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddDbContext<PaymentDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("PaymentDB"));
 });
+builder.Host.UseSerilog((context,configuration)=>configuration.ReadFrom.Configuration(context.Configuration));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

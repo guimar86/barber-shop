@@ -5,9 +5,10 @@ using ILogger = Serilog.ILogger;
 var builder = WebApplication.CreateBuilder(args);
 
 //logs
-
+builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json");
 builder.Host.UseSerilog((ctx, lc) => lc
-    .WriteTo.Console());
+    .ReadFrom.Configuration(ctx.Configuration)
+    );
 
 // Add services to the container.
 
