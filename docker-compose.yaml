@@ -72,7 +72,7 @@ services:
     volumes:
       - .appointmentdb-data:/var/lib/postgresql/data
 
-  paymentDtb:
+  paymentDb:
     image: postgres
     restart: always
     hostname: paymentDb

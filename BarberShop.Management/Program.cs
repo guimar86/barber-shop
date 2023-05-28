@@ -1,3 +1,4 @@
+using System.Reflection;
 using BarberShop.Management.DbContexts;
 using BarberShop.Management.Services;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(connectionString).EnableDetailedErrors();
 });
+
+builder.Services.AddMediatR(cfg=>cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
