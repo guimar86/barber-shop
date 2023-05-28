@@ -1,5 +1,8 @@
+using BarberShop.Management.Commands;
 using BarberShop.Management.Models;
+using BarberShop.Management.Queries;
 using BarberShop.Management.Services;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BarberShop.Management.Controllers;
@@ -8,12 +11,11 @@ namespace BarberShop.Management.Controllers;
 [Route("[controller]")]
 public class CustomerController : ControllerBase
 {
+    private readonly IMediator _mediator;
 
-    private readonly ICustomer _customerService;
-
-    public CustomerController(ICustomer customerService)
+    public CustomerController(ICustomer customerService, IMediator mediator)
     {
-        _customerService = customerService;
+        _mediator = mediator;
     }
 
     [HttpGet]
@@ -21,71 +23,110 @@ public class CustomerController : ControllerBase
     {
         try
         {
-            return Ok(await _customerService.GetAllCustomersAsync());
+            var query = new ListAllCustomersQuery();
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            var problemDetails = new ProblemDetails
+            {
+                Title = e.GetType().FullName,
+                Status = StatusCodes.Status500InternalServerError,
+                Detail = e.Message
+            };
+
+            return StatusCode(500, problemDetails);
         }
     }
-    
+
     [HttpGet]
     [Route("{customerId}")]
     public async Task<IActionResult> Find(string customerId)
     {
         try
         {
-            return Ok(await _customerService.GetCustomerAsync(customerId));
+            var query = new FindCustomerById(customerId);
+            var result = await _mediator.Send(query);
+            return result != null ? (IActionResult)Ok(result) : NotFound();
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            var problemDetails = new ProblemDetails
+            {
+                Title = e.GetType().FullName,
+                Status = StatusCodes.Status500InternalServerError,
+                Detail = e.Message
+            };
+
+            return StatusCode(500, problemDetails);
         }
     }
-    
+
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] Customer customer)
     {
         try
         {
-            return Ok(await _customerService.UpdateCustomerAsync(customer));
+            var command = new UpdateCustomerCommand(customer);
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            var problemDetails = new ProblemDetails
+            {
+                Title = e.GetType().FullName,
+                Status = StatusCodes.Status500InternalServerError,
+                Detail = e.Message
+            };
+
+            return StatusCode(500, problemDetails);
         }
     }
-    
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Customer customer)
     {
         try
         {
-            return Ok(await _customerService.CreateCustomerAsync(customer));
+            var command = new CreateCustomerCommand(customer);
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            var problemDetails = new ProblemDetails
+            {
+                Title = e.GetType().FullName,
+                Status = StatusCodes.Status500InternalServerError,
+                Detail = e.Message
+            };
+
+            return StatusCode(500, problemDetails);
         }
     }
-    
+
     [HttpDelete]
     [Route("{customerId}")]
     public async Task<IActionResult> Delete(string customerId)
     {
         try
         {
-            return Ok(await _customerService.DeleteCustomerAsync(customerId));
+            var command = new DeleteCustomerCommand(customerId);
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            var problemDetails = new ProblemDetails
+            {
+                Title = e.GetType().FullName,
+                Status = StatusCodes.Status500InternalServerError,
+                Detail = e.Message
+            };
+
+            return StatusCode(500, problemDetails);
         }
     }
-    
 }
