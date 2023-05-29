@@ -1,6 +1,39 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres
+    restart: always
+    hostname: customerDb
+    environment:
+      POSTGRES_USER: groot
+      POSTGRES_PASSWORD: whatIs@Passw0rd
+      POSTGRES_DB: customerDb
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+
+  appointmentDb:
+    image: postgres
+    restart: always
+    hostname: scheduleDB
+    environment:
+      POSTGRES_USER: groot
+      POSTGRES_PASSWORD: whatIs@Passw0rd
+      POSTGRES_DB: appointmentDB
+    volumes:
+      - appointmentdb-data:/var/lib/postgresql/data
+
+  paymentDb:
+    image: postgres
+    restart: always
+    hostname: paymentDb
+    environment:
+      POSTGRES_USER: groot
+      POSTGRES_PASSWORD: whatIs@Passw0rd
+      POSTGRES_DB: paymentsDb
+    volumes:
+      - paymentdb-data:/var/lib/postgresql/data
+
   customer-management:
     build:
       context: .
@@ -12,7 +45,7 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
     depends_on:
       - db
-    
+
   schedule-management:
     build:
       context: .
@@ -24,7 +57,7 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
     depends_on:
       - appointmentDb
-  
+
   payment-management:
     build:
       context: .
@@ -36,7 +69,7 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
     depends_on:
       - paymentDb
-        
+
   notification-management:
     build:
       context: .
@@ -46,39 +79,15 @@ services:
     environment:
       ASPNETCORE_URLS: http://+:80
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
-    depends_on:
-      - paymentDb
-  
 
-  db:
-    image: postgres
-    restart: always
-    hostname: customerDb
-    environment:
-      POSTGRES_USER: groot
-      POSTGRES_PASSWORD: whatIs@Passw0rd
-      POSTGRES_DB: customerDb
+  rabbit-mq:
+    image: rabbitmq:3.11.7-management
+    container_name: comm_queue
+    hostname: barbershop-queue
     volumes:
-      - ./data/db:/var/lib/postgresql/data
-  
-  appointmentDb:
-    image: postgres
-    restart: always
-    hostname: scheduleDB
-    environment:
-      POSTGRES_USER: groot
-      POSTGRES_PASSWORD: whatIs@Passw0rd
-      POSTGRES_DB: appointmentDB
-    volumes:
-      - .appointmentdb-data:/var/lib/postgresql/data
+      - ./containers/queue/data/:/var/lib/rabbitmq
+      - ./containers/queue/log/:/var/log/rabbitmq
 
-  paymentDb:
-    image: postgres
-    restart: always
-    hostname: paymentDb
-    environment:
-      POSTGRES_USER: groot
-      POSTGRES_PASSWORD: whatIs@Passw0rd
-      POSTGRES_DB: paymentsDb
-    volumes:
-      - .paymentsDb-data:/var/lib/postgresql/data
+volumes:
+  appointmentdb-data:
+  paymentdb-data:

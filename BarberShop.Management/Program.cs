@@ -1,7 +1,11 @@
 using System.Reflection;
+using BarberShop.Management.Config;
 using BarberShop.Management.DbContexts;
 using BarberShop.Management.Services;
+using MassTransit;
+using MassTransit.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +27,23 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 builder.Services.AddMediatR(cfg=>cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+builder.Services.Configure<MessageBrokerSettings>(builder.Configuration.GetSection("MessageBroker"));
 
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
+
+builder.Services.AddMassTransit(config =>
+{
+    config.SetKebabCaseEndpointNameFormatter();
+    config.UsingRabbitMq((context, configurator) =>
+    {
+        var settings = context.GetRequiredService<MessageBrokerSettings>();
+        configurator.Host(new Uri(settings.Host), h =>
+        {
+            h.Username(settings.Username);
+            h.Password(settings.Password);
+        });
+    });
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
