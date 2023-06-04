@@ -1,7 +1,6 @@
 using BarberShop.Management.Commands;
 using BarberShop.Management.Models;
 using BarberShop.Management.Queries;
-using BarberShop.Management.Services;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +12,7 @@ public class CustomerController : ControllerBase
 {
     private readonly IMediator _mediator;
 
-    public CustomerController(ICustomer customerService, IMediator mediator)
+    public CustomerController(IMediator mediator)
     {
         _mediator = mediator;
     }

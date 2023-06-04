@@ -34,6 +34,7 @@ builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<MessageBroker
 builder.Services.AddMassTransit(config =>
 {
     config.SetKebabCaseEndpointNameFormatter();
+    
     config.UsingRabbitMq((context, configurator) =>
     {
         var settings = context.GetRequiredService<MessageBrokerSettings>();

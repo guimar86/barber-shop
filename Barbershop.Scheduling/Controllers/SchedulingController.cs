@@ -1,6 +1,8 @@
-using System.Net;
+using Barbershop.Scheduling.Commands;
 using Barbershop.Scheduling.Models;
+using Barbershop.Scheduling.Queries;
 using Barbershop.Scheduling.Services;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Barbershop.Scheduling.Controllers;
@@ -9,11 +11,10 @@ namespace Barbershop.Scheduling.Controllers;
 [Route("[controller]")]
 public class SchedulingController : ControllerBase
 {
-    private readonly IAppointmentService _appointmentService;
-
-    public SchedulingController(IAppointmentService appointmentService)
+    private readonly ISender _mediator;
+    public SchedulingController(IAppointmentService appointmentService, ISender mediator)
     {
-        _appointmentService = appointmentService;
+        _mediator = mediator;
     }
 
     [HttpPost]
@@ -21,34 +22,41 @@ public class SchedulingController : ControllerBase
     {
         try
         {
-            var url = Url.Action(nameof(FindById), appointment.Id);
-            return Created("", await _appointmentService.CreateAppointmentAsync(appointment));
+            var command = new CreateAppointmentCommand(appointment);
+            var result =  await _mediator.Send(command);
+            return Created("",result);
         }
         catch (Exception e)
         {
             var problemDetails = new ProblemDetails
             {
-                Title = e.Message.GetType().Name,
+                Title = e.GetType().FullName,
+                Status = StatusCodes.Status500InternalServerError,
                 Detail = e.Message
             };
+
             return StatusCode(500, problemDetails);
         }
     }
 
     [HttpPut]
-    public async Task<IActionResult> update([FromBody] Appointment appointment)
+    public async Task<IActionResult> Update([FromBody] Appointment appointment)
     {
         try
         {
-            return Ok(await _appointmentService.UpdateAppointmentAsync(appointment));
+            var command = new UpdateAppointmentCommand(appointment);
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
         catch (Exception e)
         {
             var problemDetails = new ProblemDetails
             {
-                Title = e.Message.GetType().Name,
+                Title = e.GetType().FullName,
+                Status = StatusCodes.Status500InternalServerError,
                 Detail = e.Message
             };
+
             return StatusCode(500, problemDetails);
         }
     }
@@ -59,7 +67,9 @@ public class SchedulingController : ControllerBase
     {
         try
         {
-            return Ok(await _appointmentService.DeleteAppointmentAsync(id));
+            var command = new DeleteAppointmentCommand(id);
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -78,7 +88,9 @@ public class SchedulingController : ControllerBase
     {
         try
         {
-            return Ok(await _appointmentService.GetAppointmentAsync(id));
+            var query = new FindAppointmentByIdQuery(id);
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -96,7 +108,9 @@ public class SchedulingController : ControllerBase
     {
         try
         {
-            return Ok(await _appointmentService.GetAllAppointmentsAsync());
+            var query = new FindAllAppointmentsQuery();
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -115,7 +129,9 @@ public class SchedulingController : ControllerBase
     {
         try
         {
-            return Ok(await _appointmentService.GetAppointmentsForDateAsync(date));
+            var query = new FindAppointmentsByDateQuery(date);
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -134,7 +150,9 @@ public class SchedulingController : ControllerBase
     {
         try
         {
-            return Ok(await _appointmentService.GetAppointmentsForCustomerAsync(customerId));
+            var query = new FindAppointmentsByCustomerQuery(customerId);
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
         catch (Exception e)
         {
