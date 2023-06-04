@@ -17,6 +17,8 @@ services:
     restart: always
     hostname: customerDb
     container_name: customer-db
+    depends_on:
+      - rabbit-mq
     environment:
       POSTGRES_USER: groot
       POSTGRES_PASSWORD: whatIs@Passw0rd
@@ -29,6 +31,8 @@ services:
     container_name: appointment-db
     restart: always
     hostname: scheduleDB
+    depends_on: 
+     - rabbit-mq
     environment:
       POSTGRES_USER: groot
       POSTGRES_PASSWORD: whatIs@Passw0rd
@@ -41,6 +45,8 @@ services:
     restart: always
     hostname: paymentDb
     container_name: payment-db
+    depends_on:
+      - rabbit-mq
     environment:
       POSTGRES_USER: groot
       POSTGRES_PASSWORD: whatIs@Passw0rd

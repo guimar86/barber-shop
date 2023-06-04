@@ -26,11 +26,13 @@ builder.Services.AddScoped<INotification, NotificationService>();
 builder.Services.AddScoped<IEmailNotificationProvider, EmailNotificationProvider>();
 builder.Services.AddScoped<ISmsNotificationProvider, SmsNotificationProvider>();
 builder.Services.AddScoped<IPushNotificationProvider, PushNotificationProvider>();
+
+//logging serilog
 builder.Host.UseSerilog((x, y) => { y.WriteTo.Console(); });
+
+//mass transit setup
 builder.Services.Configure<MessageBrokerSettings>(builder.Configuration.GetSection("MessageBroker"));
-
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
-
 builder.Services.AddMassTransit(config =>
 {
     config.SetKebabCaseEndpointNameFormatter();
@@ -50,6 +52,10 @@ builder.Services.AddMassTransit(config =>
             endpoint => { endpoint.ConfigureConsumer<CustomerCreationConsumer>(context); });
         rabbit.ReceiveEndpoint("appointment-created-queue",
             endpoint => { endpoint.ConfigureConsumer<AppointmentCreatedConsumer>(context); });
+        rabbit.ReceiveEndpoint(queueName: "appointment-deleted-queue",
+            endpoint => { endpoint.ConfigureConsumer<AppointmentDeletedConsumer>(context); });
+        rabbit.ReceiveEndpoint(queueName: "appointment-updated-queue",
+            endpoint => { endpoint.ConfigureConsumer<AppointmentUpdatedConsumer>(context); });
     });
 });
 
