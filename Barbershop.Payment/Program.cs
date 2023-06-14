@@ -1,5 +1,6 @@
 using System.Reflection;
 using Barbershop.Payment.Config;
+using Barbershop.Payment.Consumers;
 using Barbershop.Payment.DbContexts;
 using Barbershop.Payment.Services;
 using MassTransit;
@@ -23,14 +24,14 @@ builder.Services.AddDbContext<PaymentDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PaymentDB"));
 });
 builder.Host.UseSerilog((x, y) => { y.WriteTo.Console(); });
-builder.Services.AddMediatR(cfg=>cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
 builder.Services.Configure<MessageBrokerSettings>(builder.Configuration.GetSection("MessageBroker"));
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
 
 builder.Services.AddMassTransit(config =>
 {
     config.SetKebabCaseEndpointNameFormatter();
-    
+
     config.UsingRabbitMq((context, rabbit) =>
     {
         var settings = context.GetRequiredService<MessageBrokerSettings>();
@@ -39,6 +40,9 @@ builder.Services.AddMassTransit(config =>
             h.Username(settings.Username);
             h.Password(settings.Password);
         });
+
+        rabbit.ReceiveEndpoint("appointment-created-queue",
+            endpoint => { endpoint.ConfigureConsumer<AppointmentCreatedConsumer>(context); });
     });
 });
 var app = builder.Build();

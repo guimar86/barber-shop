@@ -26,7 +26,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString).EnableDetailedErrors();
 });
 
-builder.Services.AddMediatR(cfg=>cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
 builder.Services.Configure<MessageBrokerSettings>(builder.Configuration.GetSection("MessageBroker"));
 
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
@@ -34,7 +34,7 @@ builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<MessageBroker
 builder.Services.AddMassTransit(config =>
 {
     config.SetKebabCaseEndpointNameFormatter();
-    
+
     config.UsingRabbitMq((context, configurator) =>
     {
         var settings = context.GetRequiredService<MessageBrokerSettings>();
@@ -65,7 +65,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    var context = services.GetRequiredService<ApplicationDbContext>();    
+    var context = services.GetRequiredService<ApplicationDbContext>();
     context.Database.Migrate();
 }
 
