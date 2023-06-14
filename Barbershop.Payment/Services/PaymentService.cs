@@ -1,6 +1,5 @@
 using System.Globalization;
 using Barbershop.Payment.DbContexts;
-using Barbershop.Payment.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Barbershop.Payment.Services;
@@ -55,6 +54,11 @@ public class PaymentService : IPaymentService
             throw;
         }
         throw new NotImplementedException();
+    }
+
+    public async Task<IEnumerable<Models.Payment>> GetPaymentsByCustomerAsync(string customerId)
+    {
+        return await _dbContext.Payments.Where(p => p.CustomerId.Equals(customerId)).ToListAsync();
     }
 
     /// <summary>

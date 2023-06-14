@@ -1,7 +1,6 @@
 using BarberShop.Management.Commands;
 using BarberShop.Management.Models;
 using BarberShop.Management.Queries;
-using BarberShop.Management.Services;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,13 +11,12 @@ namespace BarberShop.Management.Controllers;
 public class CustomerController : ControllerBase
 {
     private readonly IMediator _mediator;
-
-    public CustomerController(ICustomer customerService, IMediator mediator)
+    public CustomerController(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    [HttpGet]
+    [HttpGet(Name="GetAllCustomers")]
     public async Task<IActionResult> List()
     {
         try
@@ -107,7 +105,7 @@ public class CustomerController : ControllerBase
         }
     }
 
-    [HttpDelete]
+    [HttpDelete(Name="DeleteCustomer")]
     [Route("{customerId}")]
     public async Task<IActionResult> Delete(string customerId)
     {

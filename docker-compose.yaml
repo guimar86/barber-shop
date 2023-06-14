@@ -1,7 +1,61 @@
 version: '3.8'
 
 services:
+  rabbit-mq:
+    image: rabbitmq:3.11.7-management
+    ports:
+      - 5672:5672  # RabbitMQ default port
+      - 15672:15672  # RabbitMQ management UI port
+    container_name: barber-queue
+    hostname: barbershop-queue
+    volumes:
+      - ./containers/queue/data/:/var/lib/rabbitmq
+      - ./containers/queue/log/:/var/log/rabbitmq
+  
+  customer-db:
+    image: postgres
+    restart: always
+    hostname: customerDb
+    container_name: customer-db
+    depends_on:
+      - rabbit-mq
+    environment:
+      POSTGRES_USER: groot
+      POSTGRES_PASSWORD: whatIs@Passw0rd
+      POSTGRES_DB: customerDb
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+
+  appointment-db:
+    image: postgres
+    container_name: appointment-db
+    restart: always
+    hostname: scheduleDB
+    depends_on: 
+     - rabbit-mq
+    environment:
+      POSTGRES_USER: groot
+      POSTGRES_PASSWORD: whatIs@Passw0rd
+      POSTGRES_DB: appointmentDB
+    volumes:
+      - appointmentdb-data:/var/lib/postgresql/data
+
+  payment-db:
+    image: postgres
+    restart: always
+    hostname: paymentDb
+    container_name: payment-db
+    depends_on:
+      - rabbit-mq
+    environment:
+      POSTGRES_USER: groot
+      POSTGRES_PASSWORD: whatIs@Passw0rd
+      POSTGRES_DB: paymentsDb
+    volumes:
+      - paymentdb-data:/var/lib/postgresql/data
+
   customer-management:
+    container_name: customer-management
     build:
       context: .
       dockerfile: BarberShop.Management/Dockerfile
@@ -11,9 +65,10 @@ services:
       ASPNETCORE_URLS: http://+:80
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
     depends_on:
-      - db
-    
+      - customer-db
+
   schedule-management:
+    container_name: schedule-management
     build:
       context: .
       dockerfile: Barbershop.Scheduling/Dockerfile
@@ -23,9 +78,10 @@ services:
       ASPNETCORE_URLS: http://+:80
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
     depends_on:
-      - appointmentDb
-  
+      - appointment-db
+
   payment-management:
+    container_name: payment-management
     build:
       context: .
       dockerfile: Barbershop.Payment/Dockerfile
@@ -35,9 +91,10 @@ services:
       ASPNETCORE_URLS: http://+:80
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
     depends_on:
-      - paymentDb
-        
+      - payment-db
+
   notification-management:
+    container_name: notification-management
     build:
       context: .
       dockerfile: Barbershop.Notification/Dockerfile
@@ -46,39 +103,7 @@ services:
     environment:
       ASPNETCORE_URLS: http://+:80
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
-    depends_on:
-      - paymentDb
-  
-
-  db:
-    image: postgres
-    restart: always
-    hostname: customerDb
-    environment:
-      POSTGRES_USER: groot
-      POSTGRES_PASSWORD: whatIs@Passw0rd
-      POSTGRES_DB: customerDb
-    volumes:
-      - ./data/db:/var/lib/postgresql/data
-  
-  appointmentDb:
-    image: postgres
-    restart: always
-    hostname: scheduleDB
-    environment:
-      POSTGRES_USER: groot
-      POSTGRES_PASSWORD: whatIs@Passw0rd
-      POSTGRES_DB: appointmentDB
-    volumes:
-      - .appointmentdb-data:/var/lib/postgresql/data
-
-  paymentDb:
-    image: postgres
-    restart: always
-    hostname: paymentDb
-    environment:
-      POSTGRES_USER: groot
-      POSTGRES_PASSWORD: whatIs@Passw0rd
-      POSTGRES_DB: paymentsDb
-    volumes:
-      - .paymentsDb-data:/var/lib/postgresql/data
+      
+volumes:
+  appointmentdb-data:
+  paymentdb-data:

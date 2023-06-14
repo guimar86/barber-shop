@@ -1,6 +1,11 @@
+using System.Reflection;
+using Barbershop.Scheduling.Config;
 using Barbershop.Scheduling.DbContexts;
 using Barbershop.Scheduling.Services;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +21,27 @@ builder.Services.AddDbContext<SchedulingDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("SchedulingDb"));
 });
+
+builder.Host.UseSerilog((x, y) => { y.WriteTo.Console(); });
+builder.Services.AddMediatR(cfg=>cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+builder.Services.Configure<MessageBrokerSettings>(builder.Configuration.GetSection("MessageBroker"));
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
+
+builder.Services.AddMassTransit(config =>
+{
+    config.SetKebabCaseEndpointNameFormatter();
+    
+    config.UsingRabbitMq((context, configurator) =>
+    {
+        var settings = context.GetRequiredService<MessageBrokerSettings>();
+        configurator.Host(new Uri(settings.Host), h =>
+        {
+            h.Username(settings.Username);
+            h.Password(settings.Password);
+        });
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
